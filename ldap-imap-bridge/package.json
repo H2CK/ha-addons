@@ -1,0 +1,23 @@
+{
+  "name": "auth-adapter",
+  "version": "1.0.0",
+  "description": "jagel.net Authentication Adapter",
+  "main": "ldap-imap-adapter.js",
+  "scripts": {
+    "start": "node ldap-imap-adapter.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/H2CK/ldap-imap-adapter.git"
+  },
+  "author": "Thorsten Jagel",
+  "license": "MIT",
+  "dependencies": {
+    "@klenty/imap": "^1.1.5",
+    "crypto": "^1.0.1",
+    "ldapjs": "^2.3.1",
+    "nconf": "^0.11.3",
+    "yargs": "^17.3.1"
+  }
+}

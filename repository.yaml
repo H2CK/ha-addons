@@ -1,0 +1,4 @@
+# https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
+name: jagel.net Assistant add-on repository
+url: 'https://github.com/H2CK/ha-addons'
+maintainer: H2CK <dev@jagel.net>
