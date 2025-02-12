@@ -4,11 +4,12 @@ FROM $BUILD_FROM
 ENV LANG=C.UTF-8
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN apk add --no-cache \
-    nodejs \
-    npm
+RUN apk update \
+    && apk add --no-cache \
+        nodejs \
+        npm \
+    && apk del --no-cache --purge .build-deps
 
-# Copy data for add-on
 RUN mkdir -p /var/ldap-imap-adapter
 RUN mkdir -p /var/ldap-imap-adapter/lib
 COPY run.sh /var/ldap-imap-adapter/
