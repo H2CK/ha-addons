@@ -7,3 +7,7 @@
 ### [ldap-imap-bridge add-on](./ldap-imap-bridge)
 
 _Provides an LDAP service for users defined in a JSON file and providing autentication against an IMAP server_
+
+### [tvheadend add-on](./tvheadend)
+
+_Provides the tvheadend application to run on Home Assistant_
