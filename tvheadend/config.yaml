@@ -31,9 +31,8 @@ map:
     path: /recordings
 environment:
   RUN_OPTS: "--nobackup"
-  PUID: 0
-  PGID: 0
+  PUID: "0"
+  PGID: "0"
   TZ: "Europe/Berlin"
-# image: lscr.io/linuxserver/tvheadend <- shall be the path to the registry where the externally build HA docker image is stored
 image: lscr.io/linuxserver/tvheadend
 codenotary: dev@jagel.net
