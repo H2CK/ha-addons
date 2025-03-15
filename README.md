@@ -11,3 +11,7 @@ _Provides an LDAP service for users defined in a JSON file and providing autenti
 ### [tvheadend add-on](./tvheadend)
 
 _Provides the tvheadend application to run on Home Assistant_
+
+### [goaccess add-on](./goaccess)
+
+_Provides the goaccess application to run on Home Assistant_

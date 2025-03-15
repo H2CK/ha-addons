@@ -1,0 +1,26 @@
+name: GoAccess
+version: 1.0.1
+slug: goaccess
+description: Open source real-time web log analyzer
+url: https://github.com/TECH7Fox/goaccess-hass-addons
+image: ghcr.io/tech7fox/goaccess-hass-addon
+panel_title: GoAccess
+panel_icon: mdi:chart-bar
+init: false
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+ingress: true
+ingress_port: 7880
+ports:
+  7880/tcp: 7880
+map:
+  - type: addon_config
+    read_only: False
+  - type: all_addon_configs
+    read_only: False
+  - type: share
+    read_only: True
