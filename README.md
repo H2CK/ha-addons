@@ -15,3 +15,7 @@ _Provides the tvheadend application to run on Home Assistant_
 ### [goaccess add-on](./goaccess)
 
 _Provides the goaccess application to run on Home Assistant_
+
+### [gitea-runner add-on](./gitea-runner)
+
+_Provides a Gitea Runner to run on Home Assistant_
