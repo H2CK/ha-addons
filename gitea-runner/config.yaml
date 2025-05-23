@@ -1,0 +1,24 @@
+name: "Gitea - Runner"
+description: "Action Runner for Gitea"
+version: "latest"
+slug: "gitea-runner"
+init: false
+startup: system
+boot: manual
+arch:
+  - aarch64
+  - amd64
+host_network: false
+#map:
+  # Image uses /config
+  #- type: addon_config
+  #  read_only: False
+  #  path: /config
+environment:
+  #CONFIG_FILE: /config.yaml
+  GITEA_INSTANCE_URL: "http://db21ed7f-gitea:3000"
+  GITEA_RUNNER_REGISTRATION_TOKEN: ""
+  GITEA_RUNNER_LABELS: "ubuntu-latest:docker://node:16-bullseye,ubuntu-22.04:docker://node:16-bullseye,ubuntu-20.04:docker://node:16-bullseye,ubuntu-18.04:docker://node:16-buster"
+  GITEA_RUNNER_NAME: "basic"
+image: docker.io/gitea/act_runner
+codenotary: dev@jagel.net
