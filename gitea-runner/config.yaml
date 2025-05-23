@@ -15,7 +15,7 @@ map:
     read_only: False
     path: /config
 environment:
-  CONFIG_FILE: /config.yaml
+  #CONFIG_FILE: /config/runner-config.yaml - if not exists should be created in run.sh
   #GITEA_INSTANCE_URL: "http://db21ed7f-gitea:3000"
   #GITEA_RUNNER_REGISTRATION_TOKEN: ""
   #GITEA_RUNNER_LABELS: "ubuntu-latest:docker://node:16-bullseye,ubuntu-22.04:docker://node:16-bullseye,ubuntu-20.04:docker://node:16-bullseye,ubuntu-18.04:docker://node:16-buster"
