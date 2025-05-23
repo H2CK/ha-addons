@@ -10,11 +10,10 @@ arch:
   - amd64
 host_network: false
 map:
-  # Image uses /config
   - type: addon_config
     read_only: False
     path: /config
-environment:
+#environment:
   #CONFIG_FILE: /config/runner-config.yaml - if not exists should be created in run.sh
   #GITEA_INSTANCE_URL: "http://db21ed7f-gitea:3000"
   #GITEA_RUNNER_REGISTRATION_TOKEN: ""
