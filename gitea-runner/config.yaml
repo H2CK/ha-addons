@@ -1,6 +1,6 @@
 name: "Gitea - Runner"
 description: "Action Runner for Gitea"
-version: "1.0.0"
+version: "latest"
 slug: "gitea-runner"
 init: false
 startup: system
