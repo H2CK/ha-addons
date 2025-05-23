@@ -1,9 +1,12 @@
-#!/bin/sh
+#!/usr/bin/with-contenv bashio
 # Read options from /data/options.json and export as environment variables
-export GITEA_INSTANCE_URL=$(jq -r '.instance' /data/options.json)
-export GITEA_RUNNER_REGISTRATION_TOKEN=$(jq -r '.token' /data/options.json)
-export GITEA_RUNNER_LABELS=$(jq -r '.labels' /data/options.json)
-export GITEA_RUNNER_NAME=$(jq -r '.name' /data/options.json)
+
+CONFIG_PATH=/data/options.json
+
+export GITEA_INSTANCE_URL="$(bashio::config 'instance')"
+export GITEA_RUNNER_REGISTRATION_TOKEN="$(bashio::config 'token')"
+export GITEA_RUNNER_LABELS="$(bashio::config 'labels')"
+export GITEA_RUNNER_NAME="$(bashio::config 'name')"
 
 # Start your application
 exec /sbin/tini -- /opt/act/run.sh
