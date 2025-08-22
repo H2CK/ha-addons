@@ -1,9 +1,0 @@
-{
-    "build_from": {
-      "aarch64": "lscr.io/linuxserver/tvheadend:arm64v8-latest",
-      "amd64": "lscr.io/linuxserver/tvheadend:amd64-latest"
-    },
-    "codenotary": {
-      "signer": "dev@jagel.net"
-    }
-}

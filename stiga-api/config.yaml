@@ -1,0 +1,21 @@
+name: "STIGA-HA-MQTT-Bridge"
+description: "This Home Assistant Addon provides a bridge between a Home Assistant instance and the cloud environment for the STIGA A-series lawn mower."
+version: "1.0.0"
+slug: "stiga-ha-mqtt-bridge"
+init: false
+startup: application
+boot: auto
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+options:
+  stiga_username: ""
+  stiga_password: ""
+schema:
+  stiga_username:
+    - str
+  stiga_password:
+    - password

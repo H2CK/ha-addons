@@ -1,9 +1,0 @@
-{
-    "build_from": {
-      "aarch64": "docker.io/gitea/act_runner:latest",
-      "amd64": "docker.io/gitea/act_runner:latest"
-    },
-    "codenotary": {
-      "signer": "dev@jagel.net"
-    }
-}
