@@ -17,6 +17,6 @@ COPY run.sh /var/stiga-api/
 RUN chmod a+x /var/stiga-api/run.sh
 
 WORKDIR /var/stiga-api/
-RUN npm install --unsafe-perm
+RUN npm install
 
 CMD [ "/var/stiga-api/run.sh" ]
