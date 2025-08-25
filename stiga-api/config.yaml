@@ -15,7 +15,5 @@ options:
   stiga_username: ""
   stiga_password: ""
 schema:
-  stiga_username:
-    - str
-  stiga_password:
-    - password
+  stiga_username: str
+  stiga_password: password
