@@ -12,6 +12,9 @@ arch:
   - armhf
   - armv7
   - i386
+map:
+  - type: addon_config
+    read_only: False
 options:
   stiga_username: ""
   stiga_password: ""
