@@ -6,14 +6,21 @@ init: false
 startup: application
 boot: auto
 hassio_api: true
+homeassistant_api: true
+hassio_role: homeassistant
 arch:
   - aarch64
   - amd64
   - armhf
   - armv7
   - i386
+services:
+  - "mqtt:need"
 map:
+  - type: addons
   - type: addon_config
+    read_only: False
+  - type: homeassistant_config
     read_only: False
 options:
   stiga_username: ""
