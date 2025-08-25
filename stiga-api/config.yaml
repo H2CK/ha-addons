@@ -12,8 +12,6 @@ arch:
   - armhf
   - armv7
   - i386
-services:
-  - mqtt: need
 options:
   stiga_username: ""
   stiga_password: ""
