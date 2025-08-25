@@ -7,7 +7,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache \
     git \
     python3 \
+    cairo-dev \
+    pixman-dev \
+    pango-dev \
     pkgconfig \
+    build-base \
     nodejs \
     npm
 
