@@ -1,0 +1,38 @@
+name: "power-manager"
+description: "Power Manager for single SAX Battery to allow performant steering via ModbusTCP and integration into HA"
+version: "1.0.0"
+slug: "power_manager"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+url: ""
+init: false
+startup: application
+boot: auto
+hassio_api: true
+homeassistant_api: true
+hassio_role: homeassistant
+services:
+  - "mqtt:need"
+map:
+  - type: addons
+  - type: addon_config
+    read_only: False
+  - type: homeassistant_config
+    read_only: False
+options:
+  sax_host: "192.168.1.100"
+  sax_port: 502
+  adl_host: "192.168.1.101"
+  adl_port: 502
+  simulate_write: true
+  loglevel: "INFO"
+schema:
+  sax_host: str
+  sax_port: int
+  adl_host: str
+  adl_port: int
+  simulate_write: bool
+  loglevel: list(INFO|DEBUG|ERROR)

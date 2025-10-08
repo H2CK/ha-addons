@@ -15,3 +15,7 @@ _Provides the goaccess application to run on Home Assistant_
 ### [stiga-api addon](./stiga-api)
 
 _Provides a bridge between a Home Assistant instance and the cloud environment for the STIGA A-series lawn mower_
+
+### [power-manager addon](./power-manager)
+
+_Provides custom component to integrate a SAX battery_
