@@ -7,7 +7,6 @@ arch:
   - amd64
   - armhf
   - armv7
-url: ""
 init: false
 startup: application
 boot: auto
