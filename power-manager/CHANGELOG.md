@@ -3,3 +3,7 @@
 ## Version 1.0.0
 
 Initial version
+
+## Version 1.0.1
+
+Fix for retain flag

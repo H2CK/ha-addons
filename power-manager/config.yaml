@@ -1,6 +1,6 @@
 name: "power-manager"
 description: "Power Manager for single SAX Battery to allow performant steering via ModbusTCP and integration into HA"
-version: "1.0.0"
+version: "1.0.1"
 slug: "power_manager"
 arch:
   - aarch64
