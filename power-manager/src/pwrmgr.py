@@ -24,6 +24,14 @@ DISCOVERY_PREFIX = "homeassistant"
 
 UUID = "57f8797a-1137-4963-8109-d552f99cffc1"
 NAME = "Power Manager"
+DEVICE = {
+            "identifiers": [UUID],
+            "manufacturer": "jagel.net",
+            "model_id": "PM 1.0",
+            "name": NAME,
+            "serial_number": "1",
+            "sw_version": SW_VERSION
+        }
 
 UNIT_ID_SAX = 64                   # Geräteadresse/Slave ID
 UNIT_ID_ADL = 158                   # Geräteadresse/Slave ID
@@ -78,6 +86,7 @@ def parse_arguments():
     parser.add_argument("--port-mqtt", type=int, required=True, help="Port of MQTT Broker")
     parser.add_argument("--user-mqtt", type=str, required=True, help="Username for MQTT Broker")
     parser.add_argument("--pw-mqtt", type=str, required=True, help="Password for MQTT Broker")
+    parser.add_argument("--log", type=str, required=False, default="INFO", help="Define logging level (INFO, ERROR or DEBUG) (default: INFO)")
     return parser.parse_args()
 
 def daemonize():
@@ -186,14 +195,7 @@ async def send_ha_discovery():
         "command_topic": f"{base_topic}/command",
         "availability_topic": f"{base_availability_topic}",
         "json_attributes_topic": f"{base_topic}/attributes",
-        "device": {
-            "identifiers": [UUID],
-            "manufacturer": "jagel.net",
-            "model_id": "PM 1.0",
-            "name": NAME,
-            "serial_number": "1",
-            "sw_version": SW_VERSION
-        },
+        "device": DEVICE,
         "o": {
             "name": "power-manager",
             "sw": SW_VERSION,
@@ -206,9 +208,7 @@ async def send_ha_discovery():
         "icon": "mdi:state-machine",
         "state_topic": f"{pm_base_topic}/battery/state",
         "value_template": "{{ value_json }}",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_soc_sensor = {
         "name": "Battery SoC",
@@ -217,9 +217,7 @@ async def send_ha_discovery():
         "value_template": "{{ value_json }}",
         "unit_of_measurement": "%",
         "device_class": "battery",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_power_sensor = {
         "name": "Battery Power",
@@ -229,9 +227,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_smpower_sensor = {
         "name": "Battery SmartMeter Power",
@@ -241,9 +237,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_target_power_sensor = {
         "name": "Battery Target Power",
@@ -253,9 +247,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_voltage_a_sensor = {
         "name": "SmartMeter Voltage Phase A",
@@ -265,9 +257,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "V",
         "device_class": "voltage",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_voltage_b_sensor = {
         "name": "SmartMeter Voltage Phase B",
@@ -277,9 +267,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "V",
         "device_class": "voltage",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_voltage_c_sensor = {
         "name": "SmartMeter Voltage Phase C",
@@ -289,9 +277,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "V",
         "device_class": "voltage",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_current_a_sensor = {
         "name": "SmartMeter Current Phase A",
@@ -301,9 +287,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "A",
         "device_class": "current",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_current_b_sensor = {
         "name": "SmartMeter Current Phase B",
@@ -313,9 +297,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "A",
         "device_class": "current",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_current_c_sensor = {
         "name": "SmartMeter Current Phase C",
@@ -325,9 +307,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "A",
         "device_class": "current",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_actpower_a_sensor = {
         "name": "SmartMeter Active Power Phase A",
@@ -337,9 +317,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_actpower_b_sensor = {
         "name": "SmartMeter Active Power Phase B",
@@ -349,9 +327,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_actpower_c_sensor = {
         "name": "SmartMeter Active Power Phase C",
@@ -361,9 +337,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_actpower_total_sensor = {
         "name": "SmartMeter Active Power Total",
@@ -373,9 +347,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "W",
         "device_class": "power",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_powerfactor_a_sensor = {
         "name": "SmartMeter Power Factor Phase A",
@@ -383,9 +355,7 @@ async def send_ha_discovery():
         "state_topic": f"{pm_base_topic}/smartmeter/power-factor/A",
         "value_template": "{{ value_json }}",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_powerfactor_b_sensor = {
         "name": "SmartMeter Power Factor Phase B",
@@ -393,9 +363,7 @@ async def send_ha_discovery():
         "state_topic": f"{pm_base_topic}/smartmeter/power-factor/B",
         "value_template": "{{ value_json }}",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_powerfactor_c_sensor = {
         "name": "SmartMeter Power Factor Phase C",
@@ -403,9 +371,7 @@ async def send_ha_discovery():
         "state_topic": f"{pm_base_topic}/smartmeter/power-factor/C",
         "value_template": "{{ value_json }}",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_powerfactor_total_sensor = {
         "name": "SmartMeter Power Factor Total",
@@ -413,9 +379,7 @@ async def send_ha_discovery():
         "state_topic": f"{pm_base_topic}/smartmeter/power-factor/total",
         "value_template": "{{ value_json }}",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_smartmeter_frequency_sensor = {
         "name": "SmartMeter Frequency",
@@ -425,9 +389,7 @@ async def send_ha_discovery():
         "unit_of_measurement": "%",
         "device_class": "frequency",
         "state_class": "measurement",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_power_on_button = {
         "name": "Battery Power On",
@@ -435,9 +397,7 @@ async def send_ha_discovery():
         "command_topic": f"{pm_base_topic}/battery/power-cmd",
         "payload_press": "ON",
         "icon": "mdi:power-on",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_power_off_button = {
         "name": "Battery Power Off",
@@ -445,9 +405,7 @@ async def send_ha_discovery():
         "command_topic": f"{pm_base_topic}/battery/power-cmd",
         "payload_press": "OFF",
         "icon": "mdi:power-off",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_grid_loading_switch = {
         "name": "Battery Grid Loading",
@@ -456,9 +414,7 @@ async def send_ha_discovery():
         "qos": 1,
         "retain": True,
         "device_class": "switch",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_emergency_reserve_number = {
         "name": "Emergency Power Reserve",
@@ -470,9 +426,7 @@ async def send_ha_discovery():
         "min": "0",
         "max": "90",
         "mode": "slider",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_limit_charging_number = {
         "name": "Charging limit",
@@ -486,9 +440,7 @@ async def send_ha_discovery():
         "mode": "slider",
         "step": 50,
         "device_class": "power",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_limit_discharging_number = {
         "name": "Discharging limit",
@@ -502,9 +454,7 @@ async def send_ha_discovery():
         "mode": "slider",
         "step": 50,
         "device_class": "power",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     discovery_battery_prio_charging_number = {
         "name": "Prioritized charging power",
@@ -518,9 +468,7 @@ async def send_ha_discovery():
         "mode": "slider",
         "step": 50,
         "device_class": "power",
-        "device": {
-            "identifiers": [UUID],
-        }
+        "device": DEVICE
     }
     await send_mqtt_message(topic=f"{base_topic}/config", payload=json.dumps(discovery_payload), retain=True)
     await send_mqtt_message(topic=f"{base_sensor_topic}/battery_state/config", payload=json.dumps(discovery_battery_state_sensor), retain=True)
@@ -619,33 +567,33 @@ async def main(args):
             starttime_a = time.time()
             sax_value = fetch_modbus(client_sax, REG_SAX_START, 4)
             endtime = time.time()
-            totaltime = (endtime - starttime_a) * 1000
+            totaltime_sax = (endtime - starttime_a) * 1000
             if sax_value is None:
                 logging.error("No response could be retrieved by SAX Battery. Retrying full cycle.")
                 continue
             sax_power = sax_value[2] - 16384
             sax_smpower = sax_value[3] - 16384
             sax_data_event.set()
-            logging.info(f"SAX Battery response in {totaltime:.3f}ms: Mode {sax_value[0]} / SoC {sax_value[1]}% / Power {sax_power}W / SmartMeter Power {sax_smpower}W")
+            logging.debug(f"SAX Battery response in {totaltime_sax:.3f}ms: Mode {sax_value[0]} / SoC {sax_value[1]}% / Power {sax_power}W / SmartMeter Power {sax_smpower}W")
 
             starttime = time.time()
             adl_value = fetch_modbus(client_adl, REG_ADL_START, 23)
             endtime = time.time()
-            totaltime = (endtime - starttime) * 1000
+            totaltime_adl = (endtime - starttime) * 1000
             if adl_value is None:
                 logging.error("No response could be retrieved by SAX Battery. Retrying full cycle.")
                 continue
             adl_pf = unsigned_to_signed(adl_value[21], 16) * 0.001
             adl_power = unsigned_to_signed(adl_value[9], 16)
             adl_data_event.set()
-            logging.info(f"ADL SmartMeter response in {totaltime:.3f}ms: Total Power {adl_power}W / Power Factor {adl_pf:.3f}")
+            logging.debug(f"ADL SmartMeter response in {totaltime_adl:.3f}ms: Total Power {adl_power}W / Power Factor {adl_pf:.3f}")
 
             starttime = time.time()
             await send_mqtt_message(topic=f"{pm_base_topic}/battery/state", payload=sax_value[0], retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/battery/soc", payload=sax_value[1], retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/battery/power", payload=sax_power, retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/battery/smpower", payload=sax_smpower, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/request/time/actual", payload=totaltime, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/request/time/actual", payload=totaltime_sax, retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/A", payload=adl_value[0] * 0.1, retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/B", payload=adl_value[1] * 0.1, retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/C", payload=adl_value[2] * 0.1, retain=True)
@@ -669,10 +617,10 @@ async def main(args):
             await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/C", payload=unsigned_to_signed(adl_value[20], 16) * 0.001, retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/total", payload=adl_pf, retain=True)
             await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/frequency", payload=adl_value[22] * 0.01, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/request/time/actual", payload=totaltime, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/request/time/actual", payload=totaltime_adl, retain=True)
             endtime = time.time()
-            totaltime = (endtime - starttime) * 1000
-            logging.info(f"MQTT update in {totaltime:.3f}ms done.")
+            totaltime_mqtt = (endtime - starttime) * 1000
+            logging.debug(f"MQTT update in {totaltime_mqtt:.3f}ms done.")
 
             #Calculate target values
             sax_target_value = sax_power + adl_power
@@ -686,9 +634,11 @@ async def main(args):
                 sax_target_value = 0
             if sax_target_value > 0 and sax_value[1] <= emergency_reserve:
                 sax_target_value = 0
+            if adl_pf < 0:
+                adl_pf = adl_pf * (-1)
             endtime = time.time()
             totaltime = (endtime - starttime_a) * 1000
-            logging.info(f"Cycle terminated in {totaltime:.3f}ms: Calculated target power for SAX battery: {sax_target_value}W")
+            logging.info(f"Cycle terminated in {totaltime:.3f}ms: SAX-Modbus {totaltime_sax:.3f}ms / ADL-Modbus {totaltime_adl:.3f}ms / MQTT {totaltime_mqtt:.3f}ms / Battery target power {sax_target_value}W")
             await send_mqtt_message(topic=f"{pm_base_topic}/battery/target_power", payload=sax_target_value, retain=True)
             write_modbus(client_sax, 41, [(sax_target_value & 0xFFFF), (int(adl_pf*1000) & 0xFFFF)])
             
@@ -714,6 +664,12 @@ async def main(args):
 
 if __name__ == "__main__":
     args = parse_arguments()
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError(f'Invalid Log-Level: {args.log}')
+
+    logging.getLogger().setLevel(numeric_level)
+    
     if args.d:
         daemonize()
 
