@@ -183,7 +183,7 @@ async def send_mqtt_message(topic, payload, retain=False):
     global mqtt_client
     if mqtt_client is not None:
         logging.debug(f"Publishing MQTT: {topic} => {payload}")
-        await mqtt_client.publish(topic, payload, retain)
+        await mqtt_client.publish(topic, payload, retain=retain)
     else:
         logging.error("❌ Unable to send MQTT message. Client not yet connected.")
 
@@ -531,6 +531,7 @@ def write_modbus(client, register, values):
 
 def update_limits():
     global client_sax
+    logging.info("Updating limits ...")
     write_modbus(client_sax, 43, [limit_discharging])
     write_modbus(client_sax, 44, [limit_charging])
 
@@ -562,7 +563,7 @@ async def main(args):
         schedule.every(3).minutes.do(update_limits)
 
         while True:
-            await send_mqtt_message(topic=f"{base_availability_topic}", payload="online", retain=True)
+            await send_mqtt_message(topic=f"{base_availability_topic}", payload="online", retain=False)
 
             starttime_a = time.time()
             sax_value = fetch_modbus(client_sax, REG_SAX_START, 4)
