@@ -15,6 +15,8 @@ SAX_PORT=$(bashio::config 'sax_port')
 ADL_HOST=$(bashio::config 'adl_host')
 ADL_PORT=$(bashio::config 'adl_port')
 CONFIG_LOGLEVEL=$(bashio::config 'loglevel')
+TIMEOUT=$(bashio::config 'timeout')
+MQTT_UPDATE_FACTOR=$(bashio::config 'mqtt_update_factor')
 
 cd /srv
 if [ -f "./venv/bin/activate" ] ; then
@@ -22,7 +24,7 @@ if [ -f "./venv/bin/activate" ] ; then
 fi
 
 if bashio::config.true 'simulate_write'; then
-  python pwrmgr.py "-sim" "--host-sax=$SAX_HOST" "--port-sax=$SAX_PORT" "--host-adl=$ADL_HOST" "--port-adl=$ADL_PORT" "--host-mqtt=$MQTT_HOST" "--port-mqtt=$MQTT_PORT" "--user-mqtt=$MQTT_USER" "--pw-mqtt=$MQTT_PASSWORD" "--log=$CONFIG_LOGLEVEL"
+  python pwrmgr.py "-sim" "--timeout=$TIMEOUT" "--mqtt-update-factor=$MQTT_UPDATE_FACTOR" "--host-sax=$SAX_HOST" "--port-sax=$SAX_PORT" "--host-adl=$ADL_HOST" "--port-adl=$ADL_PORT" "--host-mqtt=$MQTT_HOST" "--port-mqtt=$MQTT_PORT" "--user-mqtt=$MQTT_USER" "--pw-mqtt=$MQTT_PASSWORD" "--log=$CONFIG_LOGLEVEL"
 else
-  python pwrmgr.py "--host-sax=$SAX_HOST" "--port-sax=$SAX_PORT" "--host-adl=$ADL_HOST" "--port-adl=$ADL_PORT" "--host-mqtt=$MQTT_HOST" "--port-mqtt=$MQTT_PORT" "--user-mqtt=$MQTT_USER" "--pw-mqtt=$MQTT_PASSWORD" "--log=$CONFIG_LOGLEVEL"
+  python pwrmgr.py "--timeout=$TIMEOUT" "--mqtt-update-factor=$MQTT_UPDATE_FACTOR" "--host-sax=$SAX_HOST" "--port-sax=$SAX_PORT" "--host-adl=$ADL_HOST" "--port-adl=$ADL_PORT" "--host-mqtt=$MQTT_HOST" "--port-mqtt=$MQTT_PORT" "--user-mqtt=$MQTT_USER" "--pw-mqtt=$MQTT_PASSWORD" "--log=$CONFIG_LOGLEVEL"
 fi

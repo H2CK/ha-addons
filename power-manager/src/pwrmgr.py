@@ -64,6 +64,9 @@ base_button_topic = f"{DISCOVERY_PREFIX}/button/{UUID}"
 
 pm_base_topic = f"power-mgr/{UUID}"
 
+counter = 0
+mqtt_lock = False
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Power Manager")
     parser.add_argument(
@@ -87,6 +90,8 @@ def parse_arguments():
     parser.add_argument("--user-mqtt", type=str, required=True, help="Username for MQTT Broker")
     parser.add_argument("--pw-mqtt", type=str, required=True, help="Password for MQTT Broker")
     parser.add_argument("--log", type=str, required=False, default="INFO", help="Define logging level (INFO, ERROR or DEBUG) (default: INFO)")
+    parser.add_argument("--timeout", type=int, required=False, default=1, help="Timeout after a cycle before a new cycle starts")
+    parser.add_argument("--mqtt-update-factor", type=int, required=False, default=1, help="Factor how often an mqtt update is performed")
     return parser.parse_args()
 
 def daemonize():
@@ -179,8 +184,11 @@ async def mqtt_task(args):
     except MqttError as error:
         logging.error(f"❌ MQTT error: {error}")
 
-async def send_mqtt_message(topic, payload, retain=False):
-    global mqtt_client
+async def send_mqtt_message(topic, payload, retain=False, overwrite_lock=False):
+    global mqtt_client, mqtt_lock
+    if mqtt_lock and not overwrite_lock:
+        logging.debug("Skipping MQTT update.")
+        return None
     if mqtt_client is not None:
         logging.debug(f"Publishing MQTT: {topic} => {payload}")
         await mqtt_client.publish(topic, payload, retain=retain)
@@ -536,7 +544,7 @@ def update_limits():
     write_modbus(client_sax, 44, [limit_charging])
 
 async def main(args):
-    global client_sax, client_adl, sax_value, adl_value, grid_loading, emergency_reserve, limit_charging, limit_discharging, prio_charging, cargs
+    global client_sax, client_adl, sax_value, adl_value, grid_loading, emergency_reserve, limit_charging, limit_discharging, prio_charging, cargs, counter, mqtt_lock
     logging.info("Starting Power Manager ...")
     signal.signal(signal.SIGTERM, signal_handler)  # Beenden bei SIGTERM
 
@@ -563,6 +571,12 @@ async def main(args):
         schedule.every(3).minutes.do(update_limits)
 
         while True:
+            counter = (counter + 1) % args.mqtt_update_factor
+            if counter == 0:
+                mqtt_lock = False
+            else:
+                mqtt_lock = True
+
             await send_mqtt_message(topic=f"{base_availability_topic}", payload="online", retain=False)
 
             starttime_a = time.time()
@@ -645,7 +659,7 @@ async def main(args):
             
             schedule.run_pending()
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(args.timeout)
 
     except KeyboardInterrupt:
         logging.info("🛑 Processing terminated")
@@ -653,7 +667,7 @@ async def main(args):
         logging.info("🛑 Processing terminated")
 
     finally:
-        await send_mqtt_message(topic=f"{base_availability_topic}", payload="offline", retain=False)
+        await send_mqtt_message(topic=f"{base_availability_topic}", payload="offline", retain=False, overwrite_lock=True)
         client_sax.close()
         client_adl.close()
         task.cancel()

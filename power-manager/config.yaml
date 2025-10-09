@@ -1,6 +1,6 @@
 name: "power-manager"
 description: "Power Manager for single SAX Battery to allow performant steering via ModbusTCP and integration into HA"
-version: "1.0.2"
+version: "1.0.3"
 slug: "power_manager"
 arch:
   - aarch64
@@ -26,7 +26,9 @@ options:
   sax_port: 502
   adl_host: "192.168.1.101"
   adl_port: 502
-  simulate_write: true
+  simulate_write: false
+  timeout: 1
+  mqtt_update_factor: 1
   loglevel: "INFO"
 schema:
   sax_host: str
@@ -34,4 +36,6 @@ schema:
   adl_host: str
   adl_port: int
   simulate_write: bool
+  timeout: int
+  mqtt_update_factor: int
   loglevel: list(INFO|DEBUG|ERROR)

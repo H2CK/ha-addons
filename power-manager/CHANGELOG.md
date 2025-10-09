@@ -1,13 +1,17 @@
 # Changelog
 
-## Version 1.0.0
+## Version 1.0.3
 
-Initial version
+Configurable timing
+
+## Version 1.0.2
+
+Fix for starting without simulation
 
 ## Version 1.0.1
 
 Fix for retain flag
 
-## Version 1.0.2
+## Version 1.0.0
 
-Fix for starting without simulation
+Initial version
