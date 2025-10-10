@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 1.0.4
+
+- Fixed unit for frequency
+- Added PV fetching
+
 ## Version 1.0.3
 
 Configurable timing

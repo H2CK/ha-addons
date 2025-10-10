@@ -7,6 +7,7 @@ import signal
 import json
 import logging
 import schedule
+import requests
 
 from pyModbusTCP.client import ModbusClient
 
@@ -46,6 +47,7 @@ client_sax = None
 client_adl = None
 sax_value = None
 adl_value = None
+pv_value = [0,0,0,0]
 sax_data_event = asyncio.Event() # Set when first data from SAX Battery was received
 adl_data_event = asyncio.Event() # Set when first data from ADL was received
 cargs = None
@@ -89,6 +91,9 @@ def parse_arguments():
     parser.add_argument("--port-mqtt", type=int, required=True, help="Port of MQTT Broker")
     parser.add_argument("--user-mqtt", type=str, required=True, help="Username for MQTT Broker")
     parser.add_argument("--pw-mqtt", type=str, required=True, help="Password for MQTT Broker")
+    parser.add_argument("--url-pv", type=str, required=True, help="URL for request to PV (only the host part, e.g. http://192.168.1.139)")
+    parser.add_argument("--user-pv", type=str, required=True, help="Username for REST request to PV")
+    parser.add_argument("--pw-pv", type=str, required=True, help="Password for REST request to PV")
     parser.add_argument("--log", type=str, required=False, default="INFO", help="Define logging level (INFO, ERROR or DEBUG) (default: INFO)")
     parser.add_argument("--timeout", type=int, required=False, default=1, help="Timeout after a cycle before a new cycle starts")
     parser.add_argument("--mqtt-update-factor", type=int, required=False, default=1, help="Factor how often an mqtt update is performed")
@@ -113,6 +118,41 @@ def daemonize():
 def signal_handler(signum, frame):
     logging.info("Power Manager is terminated...")
     sys.exit(0)
+
+def fetch_pv_data():
+    global cargs, pv_value
+    try:
+        logging.debug(f"Sending REST request to {cargs.url_pv}/api/dxs.json?dxsEntries=33556736&dxsEntries=67109120&dxsEntries=16780032&dxsEntries=251658754")
+        starttime = time.time()
+        response = requests.get(f"{cargs.url_pv}/api/dxs.json?dxsEntries=33556736&dxsEntries=67109120&dxsEntries=16780032&dxsEntries=251658754", auth=(cargs.user_pv, cargs.pw_pv), timeout=10, verify=True)
+        
+        response.raise_for_status()
+        data = response.json()
+        totaltime = (time.time() - starttime) * 1000
+        logging.debug(f"Received REST response: {response.text}")
+        entries = data.get("dxsEntries", [])
+        if len(entries) == 4:
+            pv_value[0] = entries[0].get("value")
+            pv_value[1] = entries[1].get("value")
+            pv_value[2] = entries[2].get("value")
+            pv_value[3] = entries[3].get("value")
+            logging.info(f"PV data fetching terminated in {totaltime:.3f}ms: DC Power {pv_value[0]}W / AC Power {pv_value[1]}W / State {pv_value[2]}")
+        else:
+            logging.error("REST request failed: Missing entries")
+            pv_value[0] = 0
+            pv_value[1] = 0
+            pv_value[2] = 0
+            pv_value[3] = 0
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"REST request failed: {e}")
+        pv_value[0] = 0
+        pv_value[1] = 0
+        pv_value[2] = 0
+        pv_value[3] = 0
+
+    return None
+
 
 async def mqtt_task(args):
     global mqtt_client, client_sax, sax_value, adl_value, grid_loading, emergency_reserve, limit_charging, limit_discharging, prio_charging
@@ -394,9 +434,47 @@ async def send_ha_discovery():
         "unique_id": f"{UUID}_pm_smartmeter_frequency",
         "state_topic": f"{pm_base_topic}/smartmeter/frequency",
         "value_template": "{{ value_json }}",
-        "unit_of_measurement": "%",
+        "unit_of_measurement": "Hz",
         "device_class": "frequency",
         "state_class": "measurement",
+        "device": DEVICE
+    }
+    discovery_pv_state_sensor = {
+        "name": "PV Operation Mode",
+        "unique_id": f"{UUID}_pm_pv_state",
+        "icon": "mdi:state-machine",
+        "state_topic": f"{pm_base_topic}/pv/state",
+        "value_template": "{{ value_json }}",
+        "device": DEVICE
+    }
+    discovery_pv_power_sensor = {
+        "name": "PV Power",
+        "unique_id": f"{UUID}_pm_pv_power",
+        "state_topic": f"{pm_base_topic}/pv/power/total",
+        "value_template": "{{ value_json }}",
+        "unit_of_measurement": "W",
+        "device_class": "power",
+        "state_class": "measurement",
+        "device": DEVICE
+    }
+    discovery_pv_dc_power_sensor = {
+        "name": "PV DC Power",
+        "unique_id": f"{UUID}_pm_pv_dc_power",
+        "state_topic": f"{pm_base_topic}/pv/power/dc_in",
+        "value_template": "{{ value_json }}",
+        "unit_of_measurement": "W",
+        "device_class": "power",
+        "state_class": "measurement",
+        "device": DEVICE
+    }
+    discovery_pv_day_yield_sensor = {
+        "name": "PV Day Yield",
+        "unique_id": f"{UUID}_pm_pv_day_yield",
+        "state_topic": f"{pm_base_topic}/pv/day_yield",
+        "value_template": "{{ (value_json | float) / 1000 | round(1) }}",
+        "unit_of_measurement": "kWh",
+        "device_class": "energy",
+        "state_class": "total_increasing",
         "device": DEVICE
     }
     discovery_battery_power_on_button = {
@@ -499,6 +577,10 @@ async def send_ha_discovery():
     await send_mqtt_message(topic=f"{base_sensor_topic}/smartmeter_power_factor_c/config", payload=json.dumps(discovery_smartmeter_powerfactor_c_sensor), retain=True)
     await send_mqtt_message(topic=f"{base_sensor_topic}/smartmeter_power_factor_total/config", payload=json.dumps(discovery_smartmeter_powerfactor_total_sensor), retain=True)
     await send_mqtt_message(topic=f"{base_sensor_topic}/smartmeter_frequency/config", payload=json.dumps(discovery_smartmeter_frequency_sensor), retain=True)
+    await send_mqtt_message(topic=f"{base_sensor_topic}/pv_state/config", payload=json.dumps(discovery_pv_state_sensor), retain=True)
+    await send_mqtt_message(topic=f"{base_sensor_topic}/pv_power/config", payload=json.dumps(discovery_pv_power_sensor), retain=True)
+    await send_mqtt_message(topic=f"{base_sensor_topic}/pv_dc_power/config", payload=json.dumps(discovery_pv_dc_power_sensor), retain=True)
+    await send_mqtt_message(topic=f"{base_sensor_topic}/pv_day_yield/config", payload=json.dumps(discovery_pv_day_yield_sensor), retain=True)
     await send_mqtt_message(topic=f"{base_button_topic}/battery_power_on/config", payload=json.dumps(discovery_battery_power_on_button), retain=True)
     await send_mqtt_message(topic=f"{base_button_topic}/battery_power_off/config", payload=json.dumps(discovery_battery_power_off_button), retain=True)
     await send_mqtt_message(topic=f"{base_switch_topic}/battery_grid/config", payload=json.dumps(discovery_battery_grid_loading_switch), retain=True)
@@ -581,8 +663,7 @@ async def main(args):
 
             starttime_a = time.time()
             sax_value = fetch_modbus(client_sax, REG_SAX_START, 4)
-            endtime = time.time()
-            totaltime_sax = (endtime - starttime_a) * 1000
+            totaltime_sax = (time.time() - starttime_a) * 1000
             if sax_value is None:
                 logging.error("No response could be retrieved by SAX Battery. Retrying full cycle.")
                 continue
@@ -593,8 +674,7 @@ async def main(args):
 
             starttime = time.time()
             adl_value = fetch_modbus(client_adl, REG_ADL_START, 23)
-            endtime = time.time()
-            totaltime_adl = (endtime - starttime) * 1000
+            totaltime_adl = (time.time() - starttime) * 1000
             if adl_value is None:
                 logging.error("No response could be retrieved by SAX Battery. Retrying full cycle.")
                 continue
@@ -602,40 +682,6 @@ async def main(args):
             adl_power = unsigned_to_signed(adl_value[9], 16)
             adl_data_event.set()
             logging.debug(f"ADL SmartMeter response in {totaltime_adl:.3f}ms: Total Power {adl_power}W / Power Factor {adl_pf:.3f}")
-
-            starttime = time.time()
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/state", payload=sax_value[0], retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/soc", payload=sax_value[1], retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/power", payload=sax_power, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/smpower", payload=sax_smpower, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/request/time/actual", payload=totaltime_sax, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/A", payload=adl_value[0] * 0.1, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/B", payload=adl_value[1] * 0.1, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/C", payload=adl_value[2] * 0.1, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/current/A", payload=adl_value[3] * 0.01, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/current/B", payload=adl_value[4] * 0.01, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/current/C", payload=adl_value[5] * 0.01, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/A", payload=unsigned_to_signed(adl_value[6], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/B", payload=unsigned_to_signed(adl_value[7], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/C", payload=unsigned_to_signed(adl_value[8], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/total", payload=adl_power, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/A", payload=unsigned_to_signed(adl_value[10], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/B", payload=unsigned_to_signed(adl_value[11], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/C", payload=unsigned_to_signed(adl_value[12], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/total", payload=unsigned_to_signed(adl_value[13], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/A", payload=unsigned_to_signed(adl_value[14], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/B", payload=unsigned_to_signed(adl_value[15], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/C", payload=unsigned_to_signed(adl_value[16], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/total", payload=unsigned_to_signed(adl_value[17], 16), retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/A", payload=unsigned_to_signed(adl_value[18], 16) * 0.001, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/B", payload=unsigned_to_signed(adl_value[19], 16) * 0.001, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/C", payload=unsigned_to_signed(adl_value[20], 16) * 0.001, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/total", payload=adl_pf, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/frequency", payload=adl_value[22] * 0.01, retain=True)
-            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/request/time/actual", payload=totaltime_adl, retain=True)
-            endtime = time.time()
-            totaltime_mqtt = (endtime - starttime) * 1000
-            logging.debug(f"MQTT update in {totaltime_mqtt:.3f}ms done.")
 
             #Calculate target values
             sax_target_value = sax_power + adl_power
@@ -651,11 +697,53 @@ async def main(args):
                 sax_target_value = 0
             if adl_pf < 0:
                 adl_pf = adl_pf * (-1)
-            endtime = time.time()
-            totaltime = (endtime - starttime_a) * 1000
-            logging.info(f"Cycle terminated in {totaltime:.3f}ms: SAX-Modbus {totaltime_sax:.3f}ms / ADL-Modbus {totaltime_adl:.3f}ms / MQTT {totaltime_mqtt:.3f}ms / Battery target power {sax_target_value}W")
-            await send_mqtt_message(topic=f"{pm_base_topic}/battery/target_power", payload=sax_target_value, retain=True)
             write_modbus(client_sax, 41, [(sax_target_value & 0xFFFF), (int(adl_pf*1000) & 0xFFFF)])
+
+            if not mqtt_lock:
+                fetch_pv_data()
+
+            starttime = time.time()
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/power", payload=sax_power, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/total", payload=adl_power, retain=True)
+
+            if not mqtt_lock:
+                await send_mqtt_message(topic=f"{pm_base_topic}/pv/power/total", payload=pv_value[1], retain=True)
+                await send_mqtt_message(topic=f"{pm_base_topic}/pv/state", payload=pv_value[2], retain=True)
+                await send_mqtt_message(topic=f"{pm_base_topic}/pv/day_yield", payload=pv_value[3], retain=True)
+                await send_mqtt_message(topic=f"{pm_base_topic}/pv/power/dc_in", payload=pv_value[0], retain=True)
+
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/total", payload=adl_pf, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/target_power", payload=sax_target_value, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/state", payload=sax_value[0], retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/soc", payload=sax_value[1], retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/smpower", payload=sax_smpower, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/A", payload=adl_value[0] * 0.1, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/B", payload=adl_value[1] * 0.1, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/voltage/C", payload=adl_value[2] * 0.1, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/current/A", payload=adl_value[3] * 0.01, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/current/B", payload=adl_value[4] * 0.01, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/current/C", payload=adl_value[5] * 0.01, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/A", payload=unsigned_to_signed(adl_value[6], 16), retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/B", payload=unsigned_to_signed(adl_value[7], 16), retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/active/C", payload=unsigned_to_signed(adl_value[8], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/A", payload=unsigned_to_signed(adl_value[10], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/B", payload=unsigned_to_signed(adl_value[11], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/C", payload=unsigned_to_signed(adl_value[12], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/reactive/total", payload=unsigned_to_signed(adl_value[13], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/A", payload=unsigned_to_signed(adl_value[14], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/B", payload=unsigned_to_signed(adl_value[15], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/C", payload=unsigned_to_signed(adl_value[16], 16), retain=True)
+            #await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power/apparent/total", payload=unsigned_to_signed(adl_value[17], 16), retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/A", payload=unsigned_to_signed(adl_value[18], 16) * 0.001, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/B", payload=unsigned_to_signed(adl_value[19], 16) * 0.001, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/power-factor/C", payload=unsigned_to_signed(adl_value[20], 16) * 0.001, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/frequency", payload=adl_value[22] * 0.01, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/battery/request/time/actual", payload=totaltime_sax, retain=True)
+            await send_mqtt_message(topic=f"{pm_base_topic}/smartmeter/request/time/actual", payload=totaltime_adl, retain=True)
+            totaltime_mqtt = (time.time() - starttime) * 1000
+            logging.debug(f"MQTT update in {totaltime_mqtt:.3f}ms done.")
+            totaltime = (time.time() - starttime_a) * 1000
+            logging.info(f"Cycle terminated in {totaltime:.3f}ms: SAX-Modbus {totaltime_sax:.3f}ms / ADL-Modbus {totaltime_adl:.3f}ms / MQTT {totaltime_mqtt:.3f}ms / Battery target power {sax_target_value}W")
             
             schedule.run_pending()
 
