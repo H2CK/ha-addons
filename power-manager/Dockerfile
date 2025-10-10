@@ -14,7 +14,8 @@ RUN cd /srv && source ./venv/bin/activate && \
     pip install aiomqtt && \
     pip install paho-mqtt && \
     pip install pyModbusTCP && \
-    pip install schedule
+    pip install schedule && \
+    pip install requests
 
 COPY src/pwrmgr.py /srv
 
