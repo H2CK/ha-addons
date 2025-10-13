@@ -37,6 +37,8 @@ DEVICE = {
 UNIT_ID_SAX = 64                   # Geräteadresse/Slave ID
 UNIT_ID_ADL = 158                   # Geräteadresse/Slave ID
 
+POWER_FACTOR_TARGET = 1.0
+
 REG_SAX_START = 45
 REG_ADL_START = 0x61
 
@@ -695,9 +697,13 @@ async def main(args):
                 sax_target_value = 0
             if sax_target_value > 0 and sax_value[1] <= emergency_reserve:
                 sax_target_value = 0
-            if adl_pf < 0:
-                adl_pf = adl_pf * (-1)
-            write_modbus(client_sax, 41, [(sax_target_value & 0xFFFF), (int(adl_pf*1000) & 0xFFFF)])
+
+            sax_target_value_modbus = sax_target_value
+            if sax_target_value_modbus < 0:
+                sax_target_value_modbus = sax_target_value & 0xFFFF
+            sax_target_pf = int(POWER_FACTOR_TARGET*1000)
+
+            write_modbus(client_sax, 41, [sax_target_value_modbus, sax_target_pf])
 
             if not mqtt_lock:
                 fetch_pv_data()

@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 1.0.5
+
+- Fixed writing modbus positive values
+- Fixed calculation of power factor
+
 ## Version 1.0.4
 
 - Fixed unit for frequency
