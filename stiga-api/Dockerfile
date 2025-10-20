@@ -16,7 +16,8 @@ RUN apk add --no-cache \
     npm
 
 WORKDIR /var
-RUN git clone https://github.com/matthewgream/stiga-api.git
+#RUN git clone https://github.com/matthewgream/stiga-api.git
+RUN git clone https://github.com/H2CK/stiga-api.git
 RUN mkdir -p /var/stiga-api/homeassistant
 COPY ha-mqtt-bridge.js /var/stiga-api/homeassistant/
 COPY run.sh /var/stiga-api/
